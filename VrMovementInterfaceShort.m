@@ -79,38 +79,27 @@ classdef VrMovementInterfaceShort < hgsetget
             end
         end        
         function msg = parsedeltas(obj,msg)
-			try
-				if isempty(msg)
-					msg = NaN;
-					return
-				end				
-				sensornum = msg(1);
-				if ~any(strcmp(sensornum,obj.sensors))
-					msg = [];
-					return
-                end
-				x_index = regexp(msg,'[x]*');
-				y_index = regexp(msg,'[y]*');
-				dx = str2double(msg(x_index+1:y_index-1));
-				dy = str2double(msg(y_index+1:end));
-				if isa(dx,'double') && isa(dy,'double')
-                    obj.(sprintf('mouse%s',sensornum)).dx = dx;
-                    obj.(sprintf('mouse%s',sensornum)).dy = dy;
-                end
-			catch me
-				warning(me.message)
-			end
+            if isempty(msg)
+                msg = NaN;
+                return
+            end				
+            sensornum = msg(1);
+            if ~any(strcmp(sensornum,obj.sensors))
+                msg = [];
+                return
+            end
+            x_index = regexp(msg,'[x]*');
+            y_index = regexp(msg,'[y]*');
+            dx = str2double(msg(x_index+1:y_index-1));
+            dy = str2double(msg(y_index+1:end));
+            if isa(dx,'double') && isa(dy,'double')
+                obj.(sprintf('mouse%s',sensornum)).dx = dx;
+                obj.(sprintf('mouse%s',sensornum)).dy = dy;
+            end
         end
         function delete(obj)
-            try
-                if ~isempty(obj.serialObj) && isvalid(obj.serialObj)
-                    fclose(obj.serialObj);
-                    delete(obj.serialObj);
-                end
-            catch me
-				fclose('all');
-                disp(me.message)
-                disp(me.stack(1))
+            if ~isempty(obj.serialObj) && isvalid(obj.serialObj)
+                fclose(obj.serialObj);
                 delete(obj.serialObj);
             end
             instrreset

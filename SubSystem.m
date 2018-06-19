@@ -109,13 +109,7 @@ classdef SubSystem < hgsetget
   properties (Transient, Hidden)
 	 gui
   end
-  
-  
-  
-  
-  
-  
-  
+ 
   methods (Abstract)
 	 createSystemComponents(obj)
 	 start(obj)

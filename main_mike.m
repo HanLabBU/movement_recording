@@ -35,9 +35,6 @@ while true
     xyLeft = vr.vrSystem.rawVelocity(1,1:2);
 	xyRight = vr.vrSystem.rawVelocity(1,3:4);
     notify(vr.vrSystem,'FrameAcquired',v)
-
-%     c=clock; % Hua-an
-%     fprintf('%s\t',c(6)); % Hua-an
 	fprintf(' Left: %d %d \tRight: %d %d\n',xyLeft(1),xyLeft(2),xyRight(1),xyRight(2))
     h2 = hat;
     dt = h2-h;

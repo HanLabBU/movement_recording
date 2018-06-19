@@ -49,7 +49,7 @@ classdef VrSystemMike < SubSystem
   
   
   methods
-	 function obj = VrSystem(varargin)
+	 function obj = VrSystemMike(varargin)
 		if nargin > 1
 		  for k = 1:2:length(varargin)
 			 obj.(varargin{k}) = varargin{k+1};
@@ -68,16 +68,10 @@ classdef VrSystemMike < SubSystem
 		  instancenum = instancenum+1;
 		end
 		obj.defineDefaults@SubSystem;
-		% Override some defaults in parent class
-		%             obj.default.sessionPath =  fullfile(['F:\DATA\',...
-		%                 'VR_',datestr(date,'yyyy_mm_dd')]);
 		obj.default.autoSyncTrialTime = 60;
-		%             obj.default.savePath = obj.default.sessionPath;
 		obj.default.autoSaveFrequency = 1;
 	 end
 	 function checkProperties(obj)
-		obj.savedDataFiles = VrFile.empty(1,0);
-		obj.currentDataFileSet = VrFile.empty(1,0);
 		obj.checkProperties@SubSystem;
 	 end
   end
