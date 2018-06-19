@@ -11,7 +11,7 @@ clearvars -GLOBAL
 s = serial('Com4');
 flushinput(s);
 clear s;
-vr.vrSystem = VrSystemMike();
+vr.vrSystem = VrSystemShort();
 vr.vrSystem.start();        % enables experiment and trial state listeners
 %     vr.vrSystem.savePath = 'C:\DATA';
 fprintf('VrSystem initialized\n');

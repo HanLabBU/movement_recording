@@ -13,7 +13,7 @@ classdef SensorMike < hgsetget
     end
     
     methods
-        function obj = Sensor(sens)
+        function obj = SensorMike(sens)
             %constructor; initializes everything to zeroes
             fprintf('Creating %s sensor\n',sens)
             obj.id = sens;

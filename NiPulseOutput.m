@@ -272,11 +272,6 @@ classdef NiPulseOutput < hgsetget
   
 end
 
-
-
-
-
-
 function deleteTimerFcn(src,evnt)
 delete(src);
 end

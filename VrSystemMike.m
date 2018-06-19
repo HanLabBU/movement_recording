@@ -61,12 +61,6 @@ classdef VrSystemMike < SubSystem
 		obj.createSystemComponents()
 	 end
 	 function defineDefaults(obj)
-		persistent instancenum
-		if isempty(instancenum)
-		  instancenum = 1;
-		else
-		  instancenum = instancenum+1;
-		end
 		obj.defineDefaults@SubSystem;
 		obj.default.autoSyncTrialTime = 60;
 		obj.default.autoSaveFrequency = 1;
@@ -204,32 +198,32 @@ classdef VrSystemMike < SubSystem
 			 obj.stop();
 		end
 	 end
-	 function trialStateChangeFcn(obj,~,~)
-		fprintf('VrSystem: Received TrialStateChange event\n')
-		persistent trial_number;
-		if isempty(trial_number)
-		  trial_number = 1;
-		end
-		try
-		  if ~isempty(obj.currentDataFile)
-			 obj.currentDataFile.experimentName = obj.currentExperimentName;
-			 if ~isempty(obj.currentDataFile.trialNumber)
-				% previous data-file -> save it
-				obj.saveDataFile();
-				% exits after creating new (blank) currentDataFile
-				% for next trial
-				trial_number = trial_number + 1;
-			 end
-		  end
-		  % prepare next DataFile with info for next trial
-		  % (or minute of recording)
-		  obj.currentDataFile.trialNumber = trial_number;
-		  obj.currentDataFile.experimentName = obj.currentExperimentName;
-		  fprintf('Start of Trial: %i\n',trialnumber);
-		catch me
-		  obj.lastError = me;
-		end
-	 end
+% 	 function trialStateChangeFcn(obj,~,~)
+% 		fprintf('VrSystem: Received TrialStateChange event\n')
+% 		persistent trial_number;
+% 		if isempty(trial_number)
+% 		  trial_number = 1;
+% 		end
+% 		try
+% 		  if ~isempty(obj.currentDataFile)
+% 			 obj.currentDataFile.experimentName = obj.currentExperimentName;
+% 			 if ~isempty(obj.currentDataFile.trialNumber)
+% 				% previous data-file -> save it
+% 				obj.saveDataFile();
+% 				% exits after creating new (blank) currentDataFile
+% 				% for next trial
+% 				trial_number = trial_number + 1;
+% 			 end
+% 		  end
+% 		  % prepare next DataFile with info for next trial
+% 		  % (or minute of recording)
+% 		  obj.currentDataFile.trialNumber = trial_number;
+% 		  obj.currentDataFile.experimentName = obj.currentExperimentName;
+% 		  fprintf('Start of Trial: %i\n',trialnumber);
+% 		catch me
+% 		  obj.lastError = me;
+% 		end
+% 	 end
 	 function frameAcquiredFcn(obj,~,evnt)
 		try
 		   % NEW
@@ -286,43 +280,7 @@ classdef VrSystemMike < SubSystem
 		  end
 		  
 	 end
-	 function autoSyncTimerFcn(obj,~,~)
-		obj.numRewardsMissed = obj.numRewardsMissed + 1;
-		notify(obj,'NewTrial')
-	 end
-  end
-  methods % SET
-	 function set.experimentSyncObj(obj,bhv)
-		if ~isempty(obj.experimentStateListener)
-		  obj.experimentStateListener.Enabled = false;
-		end
-		obj.experimentSyncObj = bhv;
-		obj.experimentStateListener = addlistener(obj.experimentSyncObj,...
-		  'ExperimentStart',@(src,evnt)experimentStateChangeFcn(obj,src,evnt));
-		addlistener(obj.experimentSyncObj,...
-		  'ExperimentStop',@(src,evnt)experimentStateChangeFcn(obj,src,evnt));
-		obj.experimentStateListener.Enabled = true;
-	 end
-	 function set.trialSyncObj(obj,bhv)
-		obj.trialSyncObj = bhv;
-		if ~isempty(obj.trialStateListener)
-		  obj.trialStateListener.Enabled = false;
-		end
-		obj.trialStateListener = addlistener(obj.trialSyncObj,...
-		  'NewTrial',@(src,evnt)trialStateChangeFcn(obj,src,evnt));
-		obj.trialStateListener.Enabled = false;
-		
-	 end
-	 function set.frameSyncObj(obj,cam)
-		if ~isempty(obj.frameSyncListener)
-		  obj.frameSyncListener.Enabled = false;
-		end
-		obj.frameSyncObj = cam;
-		% Define Listener
-		obj.frameSyncListener = addlistener(obj.frameSyncObj,...
-		  'FrameAcquired',@(src,evnt)frameAcquiredFcn(obj,src,evnt));
-		obj.frameSyncListener.Enabled = false;
-	 end
+
   end
   methods
 	 function delete(obj)
