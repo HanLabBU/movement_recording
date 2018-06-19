@@ -1,16 +1,6 @@
-classdef vrMsgMike < event.EventData
+classdef vrMsgMike
     
     properties
-        Xpos
-        Ypos
-        Zpos
-        ViewAngle        
-        Dt
-        ForwardVelocity
-        RotationalVelocity
-        iterations
-        World
-        Velocity
         RawVelocity
         Time
     end

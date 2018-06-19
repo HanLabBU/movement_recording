@@ -15,6 +15,9 @@ classdef VrSystemShort < SubSystem
   properties
 	 autoSyncTrialTime
 	 autoSyncTimerObj
+	 rawVelocity
+	 forwardVelocity
+	 rotationalVelocity
 	 distanceFromTarget
 	 rewardPulseObj
 	 startPulseObj
@@ -41,7 +44,7 @@ classdef VrSystemShort < SubSystem
   
   
   methods
-	 function obj = VrSystemShort(varargin)
+	 function obj = VrSystemMike(varargin)
 		if nargin > 1
 		  for k = 1:2:length(varargin)
 			 obj.(varargin{k}) = varargin{k+1};
@@ -84,13 +87,13 @@ classdef VrSystemShort < SubSystem
 		% SETUP OUTPUTS USING NI-DAQ SESSION INTERFACE
 % 		if eval(obj.rewardCondition)
 % 		  % REWARD-PULSE
-% 		  obj.rewardPulseObj = NiPulseOutput(...
-%              'type','analog',...
-% 			 'pulseTime',3,...
-% 			 'activeHigh',true,...
-% 			 'aoNumber',1,...
-%              'pulseVal',5);
-%           obj.rewardPulseObj.setup();
+		  obj.rewardPulseObj = NiPulseOutput(...
+             'type','analog',...
+			 'pulseTime',3,...
+			 'activeHigh',true,...
+			 'aoNumber',1,...
+             'pulseVal',5);
+          obj.rewardPulseObj.setup();
 
 		  obj.clockPulseObj = NiPulseOutput(...
 			 'pulseTime',.005,...
@@ -123,9 +126,9 @@ classdef VrSystemShort < SubSystem
 		if ~isready(obj)
 		  obj.start();
 		end
-        if ~isempty(obj.clockPulseObj)
-            obj.clockPulseObj.startBackground();
-        end
+		%             if ~isempty(obj.clockPulseObj)
+		%                 obj.clockPulseObj.startBackground();
+		%             end
 		obj.trialStateListener.Enabled = true;
 		fprintf('Experiment Started\n');
 		obj.experimentRunning = true;
@@ -140,9 +143,9 @@ classdef VrSystemShort < SubSystem
 		obj.startPulseObj.sendPulse();
 	 end
 	 function stop(obj)
-        if ~isempty(obj.clockPulseObj)
-            obj.clockPulseObj.stop();
-        end
+		%             if ~isempty(obj.clockPulseObj)
+		%                 obj.clockPulseObj.stop();
+		%             end
 		if ~isempty(obj.frameSyncListener)
 		  obj.frameSyncListener.Enabled = false;
 		end
@@ -199,8 +202,21 @@ classdef VrSystemShort < SubSystem
 
 		  info.Time = evnt.Time;
 		  data = evnt.RawVelocity;
+		  % may need to check frame number?
+		  if isclosed(obj.currentDataFile)
+			 if ~issaved(obj.currentDataFile)
+				obj.saveDataFile;
+				% if file closes somehow, it will save on the next frame and open a new file
+				% e.g. if someone access data while it's open, it will close... ?
+			 end
+			 obj.currentDataFile = VrFile(...
+				'rootPath',obj.currentDataSetPath,...
+				'experimentName',obj.currentExperimentName);
+		  end
 		  addFrame2File(obj.currentDataFile,data,info);
 		  
+		  % SHOW RAW MOTION DATA
+		
 		  end
 		  
 		  if obj.showFramePeriod
@@ -223,7 +239,7 @@ classdef VrSystemShort < SubSystem
 		  obj.saveDataSet();
 		  delete(obj.clockPulseObj);
 		  delete(obj.startPulseObj);
-% 		  delete(obj.rewardPulseObj);
+		  delete(obj.rewardPulseObj);
 		catch me
 		  disp(me.message)
 		end

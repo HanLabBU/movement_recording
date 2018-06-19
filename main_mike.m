@@ -22,7 +22,7 @@ vr.movementInterface = VrMovementInterfaceShort();
 vr.movementInterface.start();
 
 % Initialize RAW VELOCITY for recording direct optical sensor input
-vr.vrSystem.rawVelocity = zeros(5,4);
+vr.vrSystem.rawVelocity = zeros(1,4);
 % Begin data-recording systems
 fprintf('Sending ExperimentStart notification...\n');
 notify(vr.vrSystem,'ExperimentStart');
