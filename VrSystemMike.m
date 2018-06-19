@@ -26,18 +26,10 @@ classdef VrSystemMike < SubSystem
 	 clockPulseObj
 	 clkCounterName = 'ctr1'
 	 clockRate = 25;
-	 rewardCondition ='false' %= 'obj.forwardVelocity > 100';
+	 rewardCondition ='false';
 	 punishPulseObj
 	 eligible
   end
-  %     properties
-  %         position
-  %         velocity
-  %         dp
-  %         dt
-  %         iterations
-  %         currentWorld
-  %     end
   properties (Hidden)
 	 lastError
 	 lastFrameAcquiredTime

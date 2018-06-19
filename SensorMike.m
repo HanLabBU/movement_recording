@@ -21,8 +21,6 @@ classdef SensorMike < hgsetget
             obj.dy = 0;
             obj.x = 0;
             obj.y = 0;
-			obj.lastReadTimeDx = hat;
-			obj.lastReadTimeDy = hat;
         end
     end
     methods % SET & GET
@@ -35,15 +33,11 @@ classdef SensorMike < hgsetget
             obj.y = obj.y + newDy;
 		end
 		function dxval = get.dx(obj)
-			timeSinceLastRead = hat - obj.lastReadTimeDx;
-			dxval = obj.x / timeSinceLastRead;
+			dxval = obj.x;
             disp(dxval);
-			obj.lastReadTimeDx = hat;
 		end
 		function dyval = get.dy(obj)
-			timeSinceLastRead = hat - obj.lastReadTimeDy;
-			dyval = obj.y / timeSinceLastRead;
-			obj.lastReadTimeDy = hat;
+			dyval = obj.y;
 		end
         function xval = get.x(obj)
             % Resets x to zero

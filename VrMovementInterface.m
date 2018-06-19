@@ -8,14 +8,11 @@ classdef VrMovementInterface < hgsetget
     properties
         serialObj
         serialTag
-        serialPort = 'COM4' %CHANGE BY KD FROM COM1
+        serialPort = 'COM4'
         serialBaudRate = 9600
 		
     end
-    properties
-        logBox
-        showLog = 'no'        
-    end
+    
     properties (SetObservable)        
         state = 'ready'
     end
@@ -39,37 +36,22 @@ classdef VrMovementInterface < hgsetget
                 obj.serialObj = serial(obj.serialPort);
                 set(obj.serialObj,...
                     'BytesAvailableFcn',@(src,evnt)readSerialFcn(obj,src,evnt),...
-                    'BaudRate',obj.serialBaudRate,...
-                    'FlowControl','hardware');
+                    'BaudRate',obj.serialBaudRate);
+                    %'FlowControl',);
                 obj.mouse1 = Sensor('1');
                 obj.mouse2 = Sensor('2');
-                
-                if isempty(obj.showLog)
-                    choice = questdlg('Display VrMovementInterface Log?');
-                    if strcmpi(choice,'yes')
-                        obj.showLog = 'yes';
-                        obj.createLogBox
-                    else
-                        obj.showLog = 'no';
-                    end
-                end
-                %obj.start;
             end
         end                
         function msg = readSerialFcn(obj,~,~)
             try
                 if strcmp(obj.state,'running')
                     msg = fscanf(obj.serialObj,'%s');
-%                     msg = fscanf(obj.serialObj,'%s');
                 else
                     flushinput(obj.serialObj);
                     return
                 end
                 msg = msg(:)';  % make character array horizontal
                 msg = obj.parsedeltas(msg);%',d);
-                %if ~isempty(msg) Mike commented out 04/13/18
-				%	notify(obj,'DataReceived',arduinoSerialMsg(msg))%TODO
-				%end
             catch me
                 warning(me.message)
                 disp(me.stack(1))
@@ -77,16 +59,7 @@ classdef VrMovementInterface < hgsetget
             end
         end        
         function start(obj)
-            try  
-				if ~isvalid(obj.serialObj)
-					delete(obj.serialObj)
-					obj.serialObj = serial(obj.serialPort);
-					set(obj.serialObj,...
-						'BytesAvailableFcn',@(src,evnt)readSerialFcn(obj,src,evnt),...
-						'BaudRate',obj.serialBaudRate,...
-						'FlowControl','hardware');
-                end
-                % next line added by mike 04/13/18
+            try 
                 flushinput(obj.serialObj);
 				fopen(obj.serialObj);
                 disp('STARTING VrMovementInterface')

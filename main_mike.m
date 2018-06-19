@@ -17,20 +17,12 @@ vr.vrSystem.start();        % enables experiment and trial state listeners
 fprintf('VrSystem initialized\n');
 
 % Movement interface
-vr.movementInterface = VrMovementInterface;
+vr.movementInterface = VrMovementInterfaceShort();
 %     vr.movementFunction = @moveBucklin;
 vr.movementInterface.start();
 
 % Initialize RAW VELOCITY for recording direct optical sensor input
 vr.vrSystem.rawVelocity = zeros(5,4);
-% rawVelocity
-% directSensor: left-x, left-y, right-x. right-y
-% axialRotation: x, y, z, 0
-% mouseRelativeCartesian: x, y, z, omega
-% worldRelativeCartesian: x, y, z, omega
-% lowPassed: x, y, z, omega
-vr.vrSystem.forwardVelocity = 0;
-
 % Begin data-recording systems
 fprintf('Sending ExperimentStart notification...\n');
 notify(vr.vrSystem,'ExperimentStart');
