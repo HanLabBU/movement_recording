@@ -8,7 +8,7 @@ restoredefaultpath
 addpath(genpath('.'));
 clearvars -GLOBAL
 %addpath(genpath('hanlabexperimentfinal'))
-s = serial('Com1');
+s = serial('Com4');
 flushinput(s);
 clear s;
 vr.vrSystem = VrSystemMike();
@@ -40,7 +40,7 @@ while true
     h = hat;
     vr = moveMike(vr);
     v = vrMsgMike(vr);
-        xyLeft = vr.vrSystem.rawVelocity(1,1:2);
+    xyLeft = vr.vrSystem.rawVelocity(1,1:2);
 	xyRight = vr.vrSystem.rawVelocity(1,3:4);
     notify(vr.vrSystem,'FrameAcquired',v)
 

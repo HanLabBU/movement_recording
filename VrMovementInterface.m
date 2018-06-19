@@ -8,7 +8,7 @@ classdef VrMovementInterface < hgsetget
     properties
         serialObj
         serialTag
-        serialPort = 'COM1' %CHANGE BY KD FROM COM1
+        serialPort = 'COM4' %CHANGE BY KD FROM COM1
         serialBaudRate = 9600
 		
     end
