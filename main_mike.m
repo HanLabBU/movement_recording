@@ -11,7 +11,7 @@ clearvars -GLOBAL
 s = serial('Com4');
 flushinput(s);
 clear s;
-vr.vrSystem = VrSystemShort();
+vr.vrSystem = VrSystem();
 vr.vrSystem.start();        % enables experiment and trial state listeners
 %     vr.vrSystem.savePath = 'C:\DATA';
 fprintf('VrSystem initialized\n');
@@ -27,8 +27,11 @@ vr.vrSystem.rawVelocity = zeros(1,4);
 fprintf('Sending ExperimentStart notification...\n');
 notify(vr.vrSystem,'ExperimentStart');
 assignin('base','vr',vr)
+global KEY_PRESSED % idea from https://www.mathworks.com/matlabcentral/answers/100980-how-do-i-write-a-loop-in-matlab-that-continues-until-the-user-presses-any-key
+KEY_PRESSED =0;
+set(gcf,'KeyPressFcn',@keypress);
 % try
-while true
+while ~KEY_PRESSED
     h = hat;
     vr = moveMike(vr);
     v = vrMsgMike(vr);
@@ -40,9 +43,16 @@ while true
     dt = h2-h;
     pause(0.05-dt);
 end
+
+
 % catch
 notify(vr.vrSystem,'ExperimentStop')
 saveDataFile(vr.vrSystem)
 saveDataSet(vr.vrSystem)
 delete(vr.movementInterface)
 % end
+
+function keypress(obj,event)
+global KEY_PRESSED
+KEY_PRESSED = 1;
+end

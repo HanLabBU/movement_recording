@@ -24,6 +24,8 @@ classdef VrSystemShort < SubSystem
 	 rewardCondition ='false';
 	 punishPulseObj
 	 eligible
+     rawVelocity
+     time
   end
   properties (Hidden)
 	 lastError
@@ -215,6 +217,41 @@ classdef VrSystemShort < SubSystem
       end
       function experimentStateChangeFcn(obj)
       end
+      
+      
+%        function set.experimentSyncObj(obj,bhv)
+% 		if ~isempty(obj.experimentStateListener)
+% 		  obj.experimentStateListener.Enabled = false;
+% 		end
+% 		obj.experimentSyncObj = bhv;
+% 		obj.experimentStateListener = addlistener(obj.experimentSyncObj,...
+% 		  'ExperimentStart',@(src,evnt)experimentStateChangeFcn(obj,src,evnt));
+% 		addlistener(obj.experimentSyncObj,...
+% 		  'ExperimentStop',@(src,evnt)experimentStateChangeFcn(obj,src,evnt));
+% 		obj.experimentStateListener.Enabled = true;
+% 	 end
+% 	 function set.trialSyncObj(obj,bhv)
+% 		obj.trialSyncObj = bhv;
+% 		if ~isempty(obj.trialStateListener)
+% 		  obj.trialStateListener.Enabled = false;
+% 		end
+% 		obj.trialStateListener = addlistener(obj.trialSyncObj,...
+% 		  'NewTrial',@(src,evnt)trialStateChangeFcn(obj,src,evnt));
+% 		obj.trialStateListener.Enabled = false;
+% 		
+% 	 end
+	 function set.frameSyncObj(obj,cam)
+		if ~isempty(obj.frameSyncListener)
+		  obj.frameSyncListener.Enabled = false;
+		end
+		obj.frameSyncObj = cam;
+		% Define Listener
+		obj.frameSyncListener = addlistener(obj.frameSyncObj,...
+		  'FrameAcquired',@(src,evnt)frameAcquiredFcn(obj,src,evnt));
+		obj.frameSyncListener.Enabled = false;
+	 end
+      
+      
   end
   
   methods
