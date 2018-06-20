@@ -1,4 +1,4 @@
-classdef vrMsgMike
+classdef vrMsgMike < event.EventData
     
     properties
         RawVelocity
