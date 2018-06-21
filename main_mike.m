@@ -25,7 +25,6 @@ vr.movementInterface.start();
 vr.vrSystem.rawVelocity = zeros(1,4);
 % Begin data-recording systems
 fprintf('Sending ExperimentStart notification...\n');
-notify(vr.vrSystem,'ExperimentStart');
 assignin('base','vr',vr)
 global KEY_PRESSED % idea from https://www.mathworks.com/matlabcentral/answers/100980-how-do-i-write-a-loop-in-matlab-that-continues-until-the-user-presses-any-key
 KEY_PRESSED =0;
@@ -50,6 +49,7 @@ notify(vr.vrSystem,'ExperimentStop')
 saveDataFile(vr.vrSystem)
 saveDataSet(vr.vrSystem)
 delete(vr.movementInterface)
+clear
 % end
 
 function keypress(obj,event)

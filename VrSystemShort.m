@@ -4,8 +4,6 @@ classdef VrSystemShort < SubSystem
   
   properties % SETTINGS
 	 maxFrameRate = 25
-% 	 showRawMotion = true
-% 	 showFramePeriod = false
   end
   properties % OBLIGATORY
 	 experimentSyncObj
@@ -13,29 +11,17 @@ classdef VrSystemShort < SubSystem
 	 frameSyncObj
   end
   properties
-% 	 autoSyncTrialTime
-% 	 autoSyncTimerObj
-% 	 distanceFromTarget
-% 	 rewardPulseObj
-% 	 startPulseObj
  	 clockPulseObj
-% 	 clkCounterName = 'ctr1'
-	 clockRate = 25;
-% 	 rewardCondition ='false';
-% 	 punishPulseObj
      rawVelocity
      time
   end
   properties (Hidden)
-	 lastError
 	 lastFrameAcquiredTime
   end
   
   events
 	 ExperimentStart
 	 ExperimentStop
-	 NewTrial
-	 NewStimulus
 	 FrameAcquired
   end
   
@@ -87,26 +73,10 @@ classdef VrSystemShort < SubSystem
 		else
 		  obj.frameSyncListener.Enabled = true;
 		end
-		obj.trialStateListener.Enabled = false;
 		obj.experimentStateListener.Enabled = true;
 		obj.ready = true;
 		fprintf('VrSystem ready... waiting for ExperimentStart event\n');
-	 end
-	 function trigger(obj)
-		if ~isready(obj)
-		  obj.start();
-		end
-        if ~isempty(obj.clockPulseObj)
-            obj.clockPulseObj.startBackground();
-        end
-		obj.trialStateListener.Enabled = true;
-		fprintf('Experiment Started\n');
-		obj.experimentRunning = true;
-		if ~isempty(obj.currentDataFileSet)
-		  obj.currentDataFileSet = VrFile.empty(1,0);
-		  obj.nDataFiles = 0;
-        end
-	 end
+     end
 	 function stop(obj)
         if ~isempty(obj.clockPulseObj)
             obj.clockPulseObj.stop();
@@ -134,8 +104,7 @@ classdef VrSystemShort < SubSystem
 		  case 'ExperimentStart'
 			 if ~obj.experimentRunning
 				obj.updateExperimentName();
-				obj.trigger();
-				obj.startPulseObj.sendPulse();
+                obj.start()
 			 end
 		  case 'ExperimentStop'
 			 obj.stop();
@@ -207,7 +176,6 @@ classdef VrSystemShort < SubSystem
 		try
 		  obj.saveDataSet();
 		  delete(obj.clockPulseObj);
-		  delete(obj.startPulseObj);
 		catch me
 		  disp(me.message)
 		end
