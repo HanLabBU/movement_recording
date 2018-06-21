@@ -1,4 +1,4 @@
-classdef VrMovementInterfaceShort < hgsetget
+classdef MovementInterface < hgsetget
     
     properties
         sensors = {'1','2'}
@@ -18,7 +18,7 @@ classdef VrMovementInterfaceShort < hgsetget
     end
     
     methods
-        function obj = VrMovementInterfaceShort(varargin)
+        function obj = MovementInterface(varargin)
             if nargin > 1
                 for i = 1:2:length(varargin)
                     obj.(varargin(i))= obj.(varargin(i+1));
@@ -53,7 +53,7 @@ classdef VrMovementInterfaceShort < hgsetget
             try 
                 flushinput(obj.serialObj);
 				fopen(obj.serialObj);
-                disp('STARTING VrMovementInterface')
+                disp('STARTING MovementInterface')
             catch err
                 disp(err.message);
                 disp(err.stack(1))

@@ -1,4 +1,4 @@
-classdef VrSystemShort < SubSystem
+classdef ImageAndMove < SubSystem
   
   
   
@@ -28,7 +28,7 @@ classdef VrSystemShort < SubSystem
   
   
   methods
-	 function obj = VrSystemShort(varargin)
+	 function obj = ImageAndMove(varargin)
 		if nargin > 1
 		  for k = 1:2:length(varargin)
 			 obj.(varargin{k}) = varargin{k+1};

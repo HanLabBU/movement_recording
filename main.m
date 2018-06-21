@@ -21,18 +21,21 @@ s = serial(movement_com);
 flushinput(s);
 clear s;
 
-experiment.camSystem = VrSystemShort();
+experiment.camSystem = ImageAndMove();
 experiment.camSystem.createSystemComponents(camera_specs{:});
 experiment.camSystem.start();
 fprintf('VrSystem initialized\n');
 
-experiment.movementInterface = VrMovementInterfaceShort();
+experiment.movementInterface = MovementInterface();
 % Initialize RAW VELOCITY for recording direct optical sensor input
 experiment.camSystem.rawVelocity = zeros(1,4);
+
 global KEY_PRESSED % idea from https://www.mathworks.com/matlabcentral/answers/100980-how-do-i-write-a-loop-in-matlab-that-continues-until-the-user-presses-any-key
 KEY_PRESSED =0;
 set(gcf,'KeyPressFcn',@keypress);
 experiment.movementInterface.start();
+
+
 while ~KEY_PRESSED
     h = hat;
     experiment = moveStep(experiment);
