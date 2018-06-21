@@ -18,31 +18,30 @@ classdef MovementInterface < hgsetget
     end
     
     methods
-        function obj = MovementInterface(varargin)
-            if nargin > 1
-                for i = 1:2:length(varargin)
-                    obj.(varargin(i))= obj.(varargin(i+1));
-                end
-            else
-                obj.serialObj = serial(obj.serialPort);
-                set(obj.serialObj,...
-                    'BytesAvailableFcn',@(src,evnt)readSerialFcn(obj,src,evnt),...
-                    'BaudRate',obj.serialBaudRate);
-                    %'FlowControl',);
-                obj.mouse1 = SensorMike('1');
-                obj.mouse2 = SensorMike('2');
+        function obj = MovementInterface(serialPort)
+            if nargin > 0
+            obj.serialPort = serialPort;
             end
+            obj.serialObj = serial(obj.serialPort);
+            set(obj.serialObj,...
+                'BytesAvailableFcn',@(src,evnt)readSerialFcn(obj,src,evnt),...
+                'BaudRate',obj.serialBaudRate);
+                %'FlowControl',);
+            obj.mouse1 = SensorMike('1');
+            obj.mouse2 = SensorMike('2');
         end                
         function msg = readSerialFcn(obj,~,~)
             try
                 if strcmp(obj.state,'running')
                     msg = fscanf(obj.serialObj,'%s');
                 else
+                    fprintf('Serial port is closed. Flushing and resuming\n');
                     flushinput(obj.serialObj);
-                    return
+                    fopen(obj.serialObj);
+                    msg = fscanf(obj.serialObj,'%s');
                 end
-                msg = msg(:)';  % make character array horizontal
-                msg = obj.parsedeltas(msg);%',d);
+                msg = msg(:)';
+                msg = obj.parsedeltas(msg);
             catch me
                 warning(me.message)
                 disp(me.stack(1))

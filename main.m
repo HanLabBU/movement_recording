@@ -16,6 +16,7 @@ if nargin < 2 || isempty(camera_specs)
      'lineNumber',0};
 end
 
+
 % make sure to flush input from the desired port
 s = serial(movement_com);
 flushinput(s);
@@ -26,7 +27,7 @@ experiment.camSystem.createSystemComponents(camera_specs{:});
 experiment.camSystem.start();
 fprintf('VrSystem initialized\n');
 
-experiment.movementInterface = MovementInterface();
+experiment.movementInterface = MovementInterface(movement_com);
 % Initialize RAW VELOCITY for recording direct optical sensor input
 experiment.camSystem.rawVelocity = zeros(1,4);
 
@@ -35,7 +36,7 @@ KEY_PRESSED =0;
 set(gcf,'KeyPressFcn',@keypress);
 experiment.movementInterface.start();
 
-
+orig_time = hat;
 while ~KEY_PRESSED
     h = hat;
     experiment = moveStep(experiment);
@@ -58,7 +59,7 @@ clear
 
 end
 
-function keypress(obj,event)
+function keypress(~,~)
     global KEY_PRESSED
     KEY_PRESSED = 1;
 end
