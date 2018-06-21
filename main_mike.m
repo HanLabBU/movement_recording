@@ -1,58 +1,61 @@
+function main_mike(movement_com, camera_specs)
+% restore all defaults and reset the NI DAQ board
 disp('Initializing...')
-%     global CURRENT_EXPERIMENT_NAME
-
-% Data recording interfaces
-%     name = inputdlg('Name this experiment, please','Experiment Name',1,{'PIPE'});
 daqreset
 restoredefaultpath
 addpath(genpath('.'));
 clearvars -GLOBAL
-%addpath(genpath('hanlabexperimentfinal'))
-s = serial('Com4');
+
+if nargin < 1 || isempty(movement_com)
+    movement_com = 'Com4';
+end
+if nargin < 2 || isempty(camera_specs)
+   camera_specs = {'pulseTime',.005,...
+     'activeHigh',true,...
+     'portNumber',1,...
+     'lineNumber',0};
+end
+
+% make sure to flush input from the desired port
+s = serial(movement_com);
 flushinput(s);
 clear s;
-vr.vrSystem = VrSystemShort();
-vr.vrSystem.start();        % enables experiment and trial state listeners
-%     vr.vrSystem.savePath = 'C:\DATA';
+
+vr.camSystem = VrSystemShort();
+vr.camSystem.createSystemComponents(camera_specs{:});
+vr.camSystem.start();
 fprintf('VrSystem initialized\n');
 
-% Movement interface
 vr.movementInterface = VrMovementInterfaceShort();
-%     vr.movementFunction = @moveBucklin;
-vr.movementInterface.start();
-
 % Initialize RAW VELOCITY for recording direct optical sensor input
-vr.vrSystem.rawVelocity = zeros(1,4);
-% Begin data-recording systems
-fprintf('Sending ExperimentStart notification...\n');
-assignin('base','vr',vr)
+vr.camSystem.rawVelocity = zeros(1,4);
 global KEY_PRESSED % idea from https://www.mathworks.com/matlabcentral/answers/100980-how-do-i-write-a-loop-in-matlab-that-continues-until-the-user-presses-any-key
 KEY_PRESSED =0;
-var = 0;
 set(gcf,'KeyPressFcn',@keypress);
-% try
+vr.movementInterface.start();
 while ~KEY_PRESSED
     h = hat;
     vr = moveMike(vr);
     v = vrMsgMike(vr);
-    xyLeft = vr.vrSystem.rawVelocity(1,1:2);
-	xyRight = vr.vrSystem.rawVelocity(1,3:4);
-    notify(vr.vrSystem,'FrameAcquired',v)
-	fprintf(' Left: %d %d \tRight: %d %d\n',xyLeft(1),xyLeft(2),xyRight(1),xyRight(2))
+    xyLeft = vr.camSystem.rawVelocity(1,1:2);
+    xyRight = vr.camSystem.rawVelocity(1,3:4);
+    notify(vr.camSystem,'FrameAcquired',v)
+    fprintf(' Left: %d %d \tRight: %d %d\n',xyLeft(1),xyLeft(2),xyRight(1),xyRight(2))
     h2 = hat;
     dt = h2-h;
-%     pause(0.05-dt);
+    pause(0.05-dt);
 end
 
-% catch
-notify(vr.vrSystem,'ExperimentStop')
-saveDataFile(vr.vrSystem)
-saveDataSet(vr.vrSystem)
+
+notify(vr.camSystem,'ExperimentStop')
+saveDataFile(vr.camSystem)
+saveDataSet(vr.camSystem)
 delete(vr.movementInterface)
 clear
-% end
+
+end
 
 function keypress(obj,event)
-global KEY_PRESSED
-KEY_PRESSED = 1;
+    global KEY_PRESSED
+    KEY_PRESSED = 1;
 end

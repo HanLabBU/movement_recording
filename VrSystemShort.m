@@ -37,7 +37,6 @@ classdef VrSystemShort < SubSystem
 		obj.defineDefaults()
 		obj.checkProperties()
 		obj.updateExperimentName()
-		obj.createSystemComponents()
 	 end
 	 function defineDefaults(obj)
 		obj.defineDefaults@SubSystem;
@@ -48,18 +47,26 @@ classdef VrSystemShort < SubSystem
 		obj.checkProperties@SubSystem;
 	 end
   end
-  methods % Required by SubSystem
-	 function createSystemComponents(obj)
-    if isempty(obj.frameSyncObj)
-      obj.frameSyncObj = obj;
-    end
-      obj.clockPulseObj = NiPulseOutput(...
-         'pulseTime',.005,...
-         'activeHigh',true,...
-         'portNumber',1,...
-         'lineNumber',0);
-      obj.clockPulseObj.setup();
- 	 end
+    methods % Required by SubSystem
+	
+        function createSystemComponents(obj,varargin)
+        if isempty(obj.frameSyncObj)
+          obj.frameSyncObj = obj;
+        end
+        if nargin < 2
+          obj.clockPulseObj = NiPulseOutput(...
+             'pulseTime',.005,...
+             'activeHigh',true,...
+             'portNumber',1,...
+             'lineNumber',0);
+          obj.clockPulseObj.setup();
+        else
+            obj.clockPulseObj = NiPulseOutput(varargin{:});
+            obj.clockPulseObj.setup();
+        end
+        end
+     
+     
 	 function start(obj)
 		obj.updateExperimentName()
 		fprintf('STARTING VRSYSTEM:\n\tSession-Path: %s\n',...
@@ -75,7 +82,6 @@ classdef VrSystemShort < SubSystem
 		end
 		obj.experimentStateListener.Enabled = true;
 		obj.ready = true;
-		fprintf('VrSystem ready... waiting for ExperimentStart event\n');
      end
 	 function stop(obj)
         if ~isempty(obj.clockPulseObj)
@@ -123,7 +129,6 @@ classdef VrSystemShort < SubSystem
 		   end
 		   
 		   obj.lastFrameAcquiredTime = tic;
-		   
 		   
 		  obj.framesAcquired = obj.framesAcquired + 1;
 		  if ~isempty(obj.clockPulseObj)

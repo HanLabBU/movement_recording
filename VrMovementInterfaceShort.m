@@ -63,8 +63,8 @@ classdef VrMovementInterfaceShort < hgsetget
 				obj.serialObj = serial(obj.serialPort);
                 set(obj.serialObj,...
                     'BytesAvailableFcn',@(src,evnt)readSerialFcn(obj,src,evnt),...
-                    'BaudRate',obj.serialBaudRate,...
-                    'FlowControl','hardware');
+                    'BaudRate',obj.serialBaudRate);
+%                     'FlowControl','hardware');
 				fopen(obj.serialObj);
             end
             obj.state = 'running';
@@ -95,6 +95,8 @@ classdef VrMovementInterfaceShort < hgsetget
             if isa(dx,'double') && isa(dy,'double')
                 obj.(sprintf('mouse%s',sensornum)).dx = dx;
                 obj.(sprintf('mouse%s',sensornum)).dy = dy;
+            else
+                error('bad sensor data!');
             end
         end
         function delete(obj)
