@@ -225,13 +225,13 @@ classdef SubSystem < hgsetget
 			 fulldatafile = DataFile.empty(0,1);
 		  end
 		  obj.currentDataFileSet(nfile) = fulldatafile;
-		  obj.nDataFiles = nfile;
+          obj.nDataFiles = nfile;
 		  if nargout>0
 			 varargout{1} = fulldatafile;
 		  end
 		catch me
-		  warning(me.message)
-		  disp(me.stack(1));
+            warning(me.message)
+            disp(me.stack(1));
 		end
 	 end
 	 function varargout = saveDataSet(obj)

@@ -60,6 +60,8 @@ classdef VrSystemShort < SubSystem
 		obj.default.autoSaveFrequency = 1;
 	 end
 	 function checkProperties(obj)
+        obj.savedDataFiles = VrFile.empty(1,0);
+		obj.currentDataFileSet = VrFile.empty(1,0);
 		obj.checkProperties@SubSystem;
 	 end
   end
@@ -168,7 +170,6 @@ classdef VrSystemShort < SubSystem
      end
 
 	 function frameAcquiredFcn(obj,~,evnt)
-		try
 		   % NEW
 		   if ~isempty(obj.lastFrameAcquiredTime)
 			  timeSinceLastFrameStart = toc(obj.lastFrameAcquiredTime);
@@ -203,14 +204,12 @@ classdef VrSystemShort < SubSystem
 		  data = evnt.RawVelocity;
 		  addFrame2File(obj.currentDataFile,data,info);
 		  
-		  end
-		  
 		  if obj.showFramePeriod
 			 fprintf(' \t FrameRate: %f\n', 1/framePeriod)
-		  end
-		  
+          end
      end
   end
+  
   methods
       
       function trialStateChangeFcn(obj)
@@ -218,28 +217,6 @@ classdef VrSystemShort < SubSystem
       function experimentStateChangeFcn(obj)
       end
       
-      
-%        function set.experimentSyncObj(obj,bhv)
-% 		if ~isempty(obj.experimentStateListener)
-% 		  obj.experimentStateListener.Enabled = false;
-% 		end
-% 		obj.experimentSyncObj = bhv;
-% 		obj.experimentStateListener = addlistener(obj.experimentSyncObj,...
-% 		  'ExperimentStart',@(src,evnt)experimentStateChangeFcn(obj,src,evnt));
-% 		addlistener(obj.experimentSyncObj,...
-% 		  'ExperimentStop',@(src,evnt)experimentStateChangeFcn(obj,src,evnt));
-% 		obj.experimentStateListener.Enabled = true;
-% 	 end
-% 	 function set.trialSyncObj(obj,bhv)
-% 		obj.trialSyncObj = bhv;
-% 		if ~isempty(obj.trialStateListener)
-% 		  obj.trialStateListener.Enabled = false;
-% 		end
-% 		obj.trialStateListener = addlistener(obj.trialSyncObj,...
-% 		  'NewTrial',@(src,evnt)trialStateChangeFcn(obj,src,evnt));
-% 		obj.trialStateListener.Enabled = false;
-% 		
-% 	 end
 	 function set.frameSyncObj(obj,cam)
 		if ~isempty(obj.frameSyncListener)
 		  obj.frameSyncListener.Enabled = false;
@@ -260,7 +237,6 @@ classdef VrSystemShort < SubSystem
 		  obj.saveDataSet();
 		  delete(obj.clockPulseObj);
 		  delete(obj.startPulseObj);
-% 		  delete(obj.rewardPulseObj);
 		catch me
 		  disp(me.message)
 		end

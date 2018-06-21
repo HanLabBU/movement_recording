@@ -34,7 +34,6 @@ classdef SensorMike < hgsetget
 		end
 		function dxval = get.dx(obj)
 			dxval = obj.x;
-            disp(dxval);
 		end
 		function dyval = get.dy(obj)
 			dyval = obj.y;

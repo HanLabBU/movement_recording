@@ -38,11 +38,11 @@ while ~KEY_PRESSED
     v = vrMsgMike(vr);
     xyLeft = vr.vrSystem.rawVelocity(1,1:2);
 	xyRight = vr.vrSystem.rawVelocity(1,3:4);
-    notify(vr.vrSystem,'FrameAcquired',v) %took out the v, to simplify the error for now, add later
+    notify(vr.vrSystem,'FrameAcquired',v)
 	fprintf(' Left: %d %d \tRight: %d %d\n',xyLeft(1),xyLeft(2),xyRight(1),xyRight(2))
     h2 = hat;
     dt = h2-h;
-    pause(0.05-dt);
+%     pause(0.05-dt);
 end
 
 % catch
