@@ -4,8 +4,8 @@ classdef VrSystemShort < SubSystem
   
   properties % SETTINGS
 	 maxFrameRate = 25
-% 	 showRawMotion = true
-% 	 showFramePeriod = false
+	 showRawMotion = true
+	 showFramePeriod = false
   end
   properties % OBLIGATORY
 	 experimentSyncObj
@@ -14,15 +14,16 @@ classdef VrSystemShort < SubSystem
   end
   properties
 % 	 autoSyncTrialTime
-% 	 autoSyncTimerObj
-% 	 distanceFromTarget
+	 autoSyncTimerObj
+	 distanceFromTarget
 % 	 rewardPulseObj
 % 	 startPulseObj
- 	 clockPulseObj
-% 	 clkCounterName = 'ctr1'
+	 clockPulseObj
+	 clkCounterName = 'ctr1'
 	 clockRate = 25;
-% 	 rewardCondition ='false';
-% 	 punishPulseObj
+	 rewardCondition ='false';
+	 punishPulseObj
+	 eligible
      rawVelocity
      time
   end
@@ -55,6 +56,8 @@ classdef VrSystemShort < SubSystem
 	 end
 	 function defineDefaults(obj)
 		obj.defineDefaults@SubSystem;
+% 		obj.default.autoSyncTrialTime = 60;
+% 		obj.default.autoSaveFrequency = 1;
 	 end
 	 function checkProperties(obj)
         obj.savedDataFiles = VrFile.empty(1,0);
@@ -64,16 +67,18 @@ classdef VrSystemShort < SubSystem
   end
   methods % Required by SubSystem
 	 function createSystemComponents(obj)
-    if isempty(obj.frameSyncObj)
-      obj.frameSyncObj = obj;
-    end
-      obj.clockPulseObj = NiPulseOutput(...
-         'pulseTime',.005,...
-         'activeHigh',true,...
-         'portNumber',1,...
-         'lineNumber',0);
-      obj.clockPulseObj.setup();
- 	 end
+		if isempty(obj.frameSyncObj)
+		  obj.frameSyncObj = obj;
+        end
+		  obj.clockPulseObj = NiPulseOutput(...
+			 'pulseTime',.005,...
+			 'activeHigh',true,...
+			 'portNumber',1,...
+			 'lineNumber',0);
+		  obj.clockPulseObj.setup();
+       
+		obj.frameSyncListener.Enabled = false;
+	 end
 	 function start(obj)
 		obj.updateExperimentName()
 		fprintf('STARTING VRSYSTEM:\n\tSession-Path: %s\n',...
@@ -87,8 +92,8 @@ classdef VrSystemShort < SubSystem
 		else
 		  obj.frameSyncListener.Enabled = true;
 		end
-		obj.trialStateListener.Enabled = false;
-		obj.experimentStateListener.Enabled = true;
+% 		obj.trialStateListener.Enabled = true;
+% 		obj.experimentStateListener.Enabled = true;
 		obj.ready = true;
 		fprintf('VrSystem ready... waiting for ExperimentStart event\n');
 	 end
@@ -105,7 +110,12 @@ classdef VrSystemShort < SubSystem
 		if ~isempty(obj.currentDataFileSet)
 		  obj.currentDataFileSet = VrFile.empty(1,0);
 		  obj.nDataFiles = 0;
-        end
+		end
+		if logical(obj.autoSyncTrialTime) && ~isempty(obj.autoSyncTimerObj)
+		  start(obj.autoSyncTimerObj);
+		  disp('autoSyncTimer started')
+		end
+		obj.startPulseObj.sendPulse();
 	 end
 	 function stop(obj)
         if ~isempty(obj.clockPulseObj)
@@ -114,6 +124,7 @@ classdef VrSystemShort < SubSystem
 		if ~isempty(obj.frameSyncListener)
 		  obj.frameSyncListener.Enabled = false;
 		end
+		obj.trialStateListener.Enabled = false;
 		obj.experimentStateListener.Enabled = false;
 		if obj.experimentRunning
 		  obj.experimentRunning = false;
@@ -125,23 +136,13 @@ classdef VrSystemShort < SubSystem
 		  end
 		  obj.saveDataSet();
 		  obj.clearDataSet();
+		  if logical(obj.autoSyncTrialTime) && ~isempty(obj.autoSyncTimerObj)
+			 obj.autoSyncTimerObj.stop();
+		  end
 		  fprintf('Experiment Stopped\n');
 		end
      end
-	 function experimentStateChangeFcn(obj,~,evnt)
-		fprintf('VrSystem: Received ExperimentStateChange event\n')
-		switch evnt.EventName
-		  case 'ExperimentStart'
-			 if ~obj.experimentRunning
-				obj.updateExperimentName();
-				obj.trigger();
-				obj.startPulseObj.sendPulse();
-			 end
-		  case 'ExperimentStop'
-			 obj.stop();
-		end
-	 end
-     
+
 	 function frameAcquiredFcn(obj,~,evnt)
 		   % NEW
 		   if ~isempty(obj.lastFrameAcquiredTime)
@@ -175,18 +176,8 @@ classdef VrSystemShort < SubSystem
       
       function trialStateChangeFcn(obj)
       end
-      
-	 function set.experimentSyncObj(obj,bhv)
-		if ~isempty(obj.experimentStateListener)
-		  obj.experimentStateListener.Enabled = false;
-		end
-		obj.experimentSyncObj = bhv;
-		obj.experimentStateListener = addlistener(obj.experimentSyncObj,...
-		  'ExperimentStart',@(src,evnt)experimentStateChangeFcn(obj,src,evnt));
-		addlistener(obj.experimentSyncObj,...
-		  'ExperimentStop',@(src,evnt)experimentStateChangeFcn(obj,src,evnt));
-		obj.experimentStateListener.Enabled = true;
-	 end
+      function experimentStateChangeFcn(obj)
+      end
       
 	 function set.frameSyncObj(obj,cam)
 		if ~isempty(obj.frameSyncListener)
