@@ -65,37 +65,11 @@ classdef VrSystemShort < SubSystem
 		obj.checkProperties@SubSystem;
 	 end
   end
-  methods % Requiired by SubSystem
+  methods % Required by SubSystem
 	 function createSystemComponents(obj)
-		if isempty(obj.experimentSyncObj) || ~isvalid(obj.experimentSyncObj)
-		  obj.experimentSyncObj = obj;
-		end
-		if isempty(obj.trialSyncObj) || ~isvalid(obj.trialSyncObj)
-		  if logical(obj.autoSyncTrialTime)
-			 % A
-			 obj.autoSyncTimerObj = timer(...
-				'ExecutionMode','fixedRate',...
-				'BusyMode','queue',...
-				'Period',obj.autoSyncTrialTime,...
-				'StartFcn',@(src,evnt)autoSyncTimerFcn(obj,src,evnt),...
-				'TimerFcn',@(src,evnt)autoSyncTimerFcn(obj,src,evnt));
-		  end
-		  obj.trialSyncObj = obj;
-		end
 		if isempty(obj.frameSyncObj)
 		  obj.frameSyncObj = obj;
-		end
-		% SETUP OUTPUTS USING NI-DAQ SESSION INTERFACE
-% 		if eval(obj.rewardCondition)
-% 		  % REWARD-PULSE
-% 		  obj.rewardPulseObj = NiPulseOutput(...
-%              'type','analog',...
-% 			 'pulseTime',3,...
-% 			 'activeHigh',true,...
-% 			 'aoNumber',1,...
-%              'pulseVal',5);
-%           obj.rewardPulseObj.setup();
-
+        end
 		  obj.clockPulseObj = NiPulseOutput(...
 			 'pulseTime',.005,...
 			 'activeHigh',true,...
@@ -208,9 +182,6 @@ classdef VrSystemShort < SubSystem
 			 fprintf(' \t FrameRate: %f\n', 1/framePeriod)
           end
      end
-  end
-  
-  methods
       
       function trialStateChangeFcn(obj)
       end
