@@ -1,0 +1,11 @@
+function experiment = moveStep(experiment)
+leftX = experiment.movementInterface.mouse1.dx;
+leftY = experiment.movementInterface.mouse1.dy;
+rightX = experiment.movementInterface.mouse2.dx;
+rightY = experiment.movementInterface.mouse2.dy;
+experiment.camSystem.rawVelocity(1,:) = [leftX, leftY, rightX, rightY];
+experiment.movementInterface.mouse1.dx = 0;
+experiment.movementInterface.mouse1.dy = 0;
+experiment.movementInterface.mouse2.dx = 0;
+experiment.movementInterface.mouse2.dy = 0;
+experiment.camSystem.time = hat;
