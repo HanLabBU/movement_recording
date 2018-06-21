@@ -1,4 +1,4 @@
-function main(movement_com, camera_specs)
+function main(movement_com, camera_specs, frame_rate)
 % restore all defaults and reset the NI DAQ board
 disp('Initializing...')
 daqreset
@@ -15,25 +15,29 @@ if nargin < 2 || isempty(camera_specs)
      'portNumber',1,...
      'lineNumber',0};
 end
-
+if nargin < 3 || isempty(frame_rate)
+   frame_rate = 0.04; %Hz
+end
 
 % make sure to flush input from the desired port
 s = serial(movement_com);
 flushinput(s);
 clear s;
 
-experiment.camSystem = ImageAndMove();
-experiment.camSystem.createSystemComponents(camera_specs{:});
-experiment.camSystem.start();
-fprintf('VrSystem initialized\n');
-
-experiment.movementInterface = MovementInterface(movement_com);
-% Initialize RAW VELOCITY for recording direct optical sensor input
-experiment.camSystem.rawVelocity = zeros(1,4);
-
+% initialize escape routine
 global KEY_PRESSED % idea from https://www.mathworks.com/matlabcentral/answers/100980-how-do-i-write-a-loop-in-matlab-that-continues-until-the-user-presses-any-key
 KEY_PRESSED =0;
 set(gcf,'KeyPressFcn',@keypress);
+
+%Initialize Camera
+experiment.camSystem = ImageAndMove();
+experiment.camSystem.createSystemComponents(camera_specs{:});
+experiment.camSystem.start();
+fprintf('Camera System initialized\n');
+
+% Initialize Movement
+experiment.movementInterface = MovementInterface(movement_com);
+experiment.camSystem.rawVelocity = zeros(1,4);
 experiment.movementInterface.start();
 
 orig_time = hat;
@@ -47,7 +51,7 @@ while ~KEY_PRESSED
     fprintf(' Left: %d %d \tRight: %d %d\n',xyLeft(1),xyLeft(2),xyRight(1),xyRight(2))
     h2 = hat;
     dt = h2-h;
-    pause(0.05-dt);
+    pause(frame_rate-dt);
 end
 
 
