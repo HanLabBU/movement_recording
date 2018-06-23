@@ -51,6 +51,9 @@ classdef ImageAndMove < SubSystem
         if isempty(obj.frameSyncObj)
           obj.frameSyncObj = obj;
         end
+        if isempty(obj.experimentSyncObj)
+           obj.experimentSyncObj = obj; 
+        end
         if nargin < 2
           obj.clockPulseObj = NiPulseOutput(...
              'pulseTime',.005,...
