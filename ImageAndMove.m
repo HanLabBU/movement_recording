@@ -151,7 +151,7 @@ classdef ImageAndMove < SubSystem
 
 		  info.Time = evnt.Time;
 		  data = evnt.RawVelocity;
-% 		  addFrame2File(obj.currentDataFile,data,info);
+		  addFrame2File(obj.currentDataFile,data,info);
 		 
      end
       
