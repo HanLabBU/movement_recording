@@ -121,7 +121,7 @@ classdef ImageAndMove < SubSystem
 			  maxFramePeriod = 1/obj.maxFrameRate;
 			  while timeSinceLastFrameStart < maxFramePeriod
 				 timeSinceLastFrameStart = toc(obj.lastFrameAcquiredTime);
-				 pause(maxFramePeriod - timeSinceLastFrameStart)
+				 pause(maxFramePeriod - timeSinceLastFrameStart))
 			  end
 		   end
 		   
