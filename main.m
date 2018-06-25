@@ -1,4 +1,4 @@
-function main(movement_com, camera_specs, frame_rate)
+function main(movement_com, camera_specs, frame_rate) % ttl_controls)
 % restore all defaults and reset the NI DAQ board
 disp('Initializing...')
 daqreset
@@ -26,12 +26,18 @@ clear s;
 
 % initialize escape routine
 global KEY_PRESSED % idea from https://www.mathworks.com/matlabcentral/answers/100980-how-do-i-write-a-loop-in-matlab-that-continues-until-the-user-presses-any-key
-KEY_PRESSED =0;
+KEY_PRESSED = 0;
 set(gcf,'KeyPressFcn',@keypress);
 
 %Initialize Camera
 experiment.camSystem = ImageAndMove();
 experiment.camSystem.createSystemComponents(camera_specs{:});
+if ~isempty(ttl_controls)
+    for n=1:numel(ttl_controls)
+        experiment.(sprintf('ttl%d',n)) = NiPulseOutput(ttl_controls{n}{:});
+        experiment.(sprintf('ttl%d',n)).setup();
+    end
+end
 experiment.camSystem.start();
 fprintf('Camera System initialized\n');
 
@@ -48,6 +54,9 @@ while ~KEY_PRESSED
     xyLeft = experiment.camSystem.rawVelocity(1,1:2);
     xyRight = experiment.camSystem.rawVelocity(1,3:4);
     notify(experiment.camSystem,'FrameAcquired',v)
+    % for n=1:numel(ttl_controls)
+    %   notify(experiment.(sprintf('ttl%d',n)),'FrameAcquired');
+    % end
     fprintf(' Left: %d %d \tRight: %d %d\n',xyLeft(1),xyLeft(2),xyRight(1),xyRight(2))
     h2 = hat;
     dt = h2-h;

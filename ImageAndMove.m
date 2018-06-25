@@ -133,11 +133,8 @@ classdef ImageAndMove < SubSystem
 			  framePeriod = inf;
 		   end
 		   
-		   obj.lastFrameAcquiredTime = tic;
-		   
-         
-         
-         
+          obj.lastFrameAcquiredTime = tic;
+            
 		  obj.framesAcquired = obj.framesAcquired + 1;
 		  if ~isempty(obj.clockPulseObj)
 			 obj.clockPulseObj.sendPulse()
@@ -151,7 +148,7 @@ classdef ImageAndMove < SubSystem
 
 		  info.Time = evnt.Time;
 		  data = evnt.RawVelocity;
-% 		  addFrame2File(obj.currentDataFile,data,info);
+		  addFrame2File(obj.currentDataFile,data,info);
 		 
      end
       
