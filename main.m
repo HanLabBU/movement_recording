@@ -32,12 +32,12 @@ set(gcf,'KeyPressFcn',@keypress);
 %Initialize Camera
 experiment.camSystem = ImageAndMove();
 experiment.camSystem.createSystemComponents(camera_specs{:});
-if ~isempty(ttl_controls)
-    for n=1:numel(ttl_controls)
-        experiment.(sprintf('ttl%d',n)) = NiPulseOutput(ttl_controls{n}{:});
-        experiment.(sprintf('ttl%d',n)).setup();
-    end
-end
+% if ~isempty(ttl_controls)
+%     for n=1:numel(ttl_controls)
+%         experiment.(sprintf('ttl%d',n)) = NiPulseOutput(ttl_controls{n}{:});
+%         experiment.(sprintf('ttl%d',n)).setup();
+%     end
+% end
 experiment.camSystem.start();
 fprintf('Camera System initialized\n');
 

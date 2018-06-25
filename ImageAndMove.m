@@ -40,8 +40,8 @@ classdef ImageAndMove < SubSystem
 		obj.defineDefaults@SubSystem;
 	 end
 	 function checkProperties(obj)
-        obj.savedDataFiles = VrFile.empty(1,0);
-		obj.currentDataFileSet = VrFile.empty(1,0);
+        obj.savedDataFiles = DataFile.empty(1,0);
+		obj.currentDataFileSet = DataFile.empty(1,0);
 		obj.checkProperties@SubSystem;
 	 end
   end
@@ -85,9 +85,6 @@ classdef ImageAndMove < SubSystem
 		obj.ready = true;
      end
 	 function stop(obj)
-        if ~isempty(obj.clockPulseObj)
-            obj.clockPulseObj.stop();
-        end
 		if ~isempty(obj.frameSyncListener)
 		  obj.frameSyncListener.Enabled = false;
 		end
@@ -98,7 +95,7 @@ classdef ImageAndMove < SubSystem
 				&& isopen(obj.currentDataFile) ...
 				&& ~issaved(obj.currentDataFile)
 			 obj.saveDataFile;
-			 obj.currentDataFile = VrFile.empty(1,0);
+			 obj.currentDataFile = DataFile.empty(1,0);
 		  end
 		  obj.saveDataSet();
 		  obj.clearDataSet();
@@ -134,20 +131,14 @@ classdef ImageAndMove < SubSystem
 			  framePeriod = inf;
 		   end
 		   
-<<<<<<< HEAD
-          obj.lastFrameAcquiredTime = tic;
-            
-=======
 		   obj.lastFrameAcquiredTime = tic;
-		   
->>>>>>> 1fd8d5fc1729d474ec69fd713d566ad74a038ebd
-		  obj.framesAcquired = obj.framesAcquired + 1;
+           obj.framesAcquired = obj.framesAcquired + 1;
 		  if ~isempty(obj.clockPulseObj)
 			 obj.clockPulseObj.sendPulse()
 		  end
 		  if isempty(obj.currentDataFile)
 			 % called on first frame
-			 obj.currentDataFile = VrFile(...
+			 obj.currentDataFile = DataFile(...
 				'rootPath',obj.currentDataSetPath,...
 				'experimentName',obj.currentExperimentName);%changed rootPath from sessionPath
 		  end
