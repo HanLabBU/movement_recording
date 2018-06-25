@@ -42,7 +42,6 @@ classdef DataFile < handle
         appendedDataFile
     end
     properties (Hidden, SetAccess = protected, Transient)
-        % 				headerMapObj
         dataFileID
         infoFileID
         filesOpen
@@ -56,10 +55,6 @@ classdef DataFile < handle
         nextDataFile
         previousDataFile
     end
-    
-    
-    
-    
     
     
     methods % Constructor
