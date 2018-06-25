@@ -61,8 +61,8 @@ classdef NiPulsePeriodic < hgsetget
             end
         end
         %this function should in theory do the same thing as the above function
-        %'pulseFrequency' but by using 'tic' 'toc'. It also has not yet been
-        %tested and could be erroneous.
+        %'pulseFrequency' but by using 'tic' 'toc'. t also has not yet been
+        %tested and could be erroneous
         function pulseFrequency1(obj, pulseInterval, pulseLength)
             if hat == obj.startTime
             tstart = tic;
