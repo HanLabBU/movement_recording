@@ -100,7 +100,7 @@ classdef NiPulseChannel < hgsetget
 			 obj.deviceId,...
 			 obj.channelId,...
 			 'OutputOnly'); sprintf('port%g/line%g',obj.portNumber,obj.lineNumber);	
-          obj.sessionNumber = numel(obj.sessionObj.Channels);
+         obj.sessionNumber = numel(obj.sessionObj
 		  if obj.activeHigh  %start low if activeHigh is true
 			 obj.sessionObj.outputSingleScan(zeros(1,numel(obj.sessionObj.Channels)));
 		  else
@@ -198,13 +198,11 @@ classdef NiPulseChannel < hgsetget
 		if nargin <= 2
 		  nPulses = 1;
 		end		
-		if nargin <= 3
-            % FIX THIS
-          pulseOnVal = zeros(1,numel(obj.sessionObj.Channels));
+		if nargin <= 3		  
 		  if obj.isanalog
-			 pulseOnVal(obj.sessionNumber) = obj.pulseVal;
+			 pulseOnVal = obj.pulseVal;
 		  else
-			 pulseOnVal(obj.sessionNumber) = obj.activeHigh;
+			 pulseOnVal = obj.activeHigh;
 		  end
 		end				
 		if nPulses > 1
@@ -227,16 +225,11 @@ classdef NiPulseChannel < hgsetget
 		obj.sessionObj.outputSingleScan(pulseOnVal); % (set high)
 		start(obj.timerObj);
 	 end
-	 function resetPulse(obj,src,evnt)
-         % FIX THIS
-         pulsevals = zeros(1,numel(obj.sessionObj.Channels));
-         pulsevals(obj.sessionNumber) = ~obj.activeHigh;
-		obj.sessionObj.outputSingleScan(pulsevals); % (reset low)
+	 function resetPulse(obj,src,evnt)		
+		obj.sessionObj.outputSingleScan(~obj.activeHigh); % (reset low)
      end
-     function resetPulseAnalog(obj)
-         % FIX THIS
-        pulsevals = zeros(1,numel(obj.sessionObj.Channels));
-		obj.sessionObj.outputSingleScan(pulsevals); % (reset low)
+     function resetPulseAnalog(obj)		
+		obj.sessionObj.outputSingleScan(0); % (reset low)
 	 end
   end
   methods % Cleanup
