@@ -16,6 +16,9 @@ classdef ImageMoveTrial < SubSystem
   end
   properties (Hidden)
 	 lastFrameAcquiredTime
+     lastTrialStartTime
+     experimentStartTime
+     trialNumber
   end
   
   events
@@ -38,6 +41,7 @@ classdef ImageMoveTrial < SubSystem
 		obj.updateExperimentName()
 	 end
 	 function defineDefaults(obj)
+        obj.trialNumber = 1;
 		obj.defineDefaults@SubSystem;
 	 end
 	 function checkProperties(obj)
@@ -84,6 +88,8 @@ classdef ImageMoveTrial < SubSystem
      
 	 function start(obj)
 		obj.updateExperimentName()
+        obj.experimentStartTime = hat;
+        obj.lastTrialStartTime = obj.experimentStartTime;
 		fprintf('STARTING VRSYSTEM:\n\tSession-Path: %s\n',...
 		  obj.sessionPath);
 		if ~isdir(obj.sessionPath)
@@ -99,19 +105,6 @@ classdef ImageMoveTrial < SubSystem
 		obj.ready = true;
      end
 	 function stop(obj)
-        if ~isempty(obj.clockPulseObj)
-            obj.clockPulseObj.stop();
-        end
-        if ~isempty(obj.trialPulseObj)
-            obj.trialPulseObj.stop();
-        end
-		if ~isempty(obj.frameSyncListener)
-		  obj.frameSyncListener.Enabled = false;
-        end
-        if ~isempty(obj.trialSyncListener)
-           obj.trialsyncListener.Enabled = false; 
-        end
-		obj.experimentStateListener.Enabled = false;
 		if obj.experimentRunning
 		  obj.experimentRunning = false;
 		  if ~isempty(obj.currentDataFile) ...
@@ -140,25 +133,19 @@ classdef ImageMoveTrial < SubSystem
      
 	 function frameAcquiredFcn(obj,~,evnt)
  		   if ~isempty(obj.lastFrameAcquiredTime)
-			  timeSinceLastFrameStart = toc(obj.lastFrameAcquiredTime);
 			  maxFramePeriod = 1/obj.maxFrameRate;
-			  while timeSinceLastFrameStart < maxFramePeriod
-				 timeSinceLastFrameStart = toc(obj.lastFrameAcquiredTime);
-				 pause(maxFramePeriod - timeSinceLastFrameStart)
-			  end
-		   end
+              timeSinceLastFrameStart = toc(obj.lastFrameAcquiredTime);
+              pause(maxFramePeriod - timeSinceLastFrameStart)
+           end
 		   
-		   try
-			  framePeriod = toc(obj.lastFrameAcquiredTime);
-		   catch
-			  framePeriod = inf;
-		   end
-		   
+           if ~isempty(obj.lastTrialStartTime) && toc(obj. 
+           end
+           
 		   obj.lastFrameAcquiredTime = tic;
 		   
 		  obj.framesAcquired = obj.framesAcquired + 1;
 		  if ~isempty(obj.clockPulseObj)
-			 obj.clockPulseObj.sendPulse()
+			 obj.clockPulseObj.sendPulse();
 		  end
 		  if isempty(obj.currentDataFile)
 			 % called on first frame
@@ -173,32 +160,29 @@ classdef ImageMoveTrial < SubSystem
 		 
      end
       
-      function trialStateChangeFcn(obj)
+      function trialStateChangeFcn(obj,~,~)
+          fprintf('Beginning new trial!\n');
+          obj.trialPulseObj.sendPulse();
       end
       
-      function set.tr
+      function set.trialSyncObj(obj,trial)
+        obj.trialStateObj = trial;
+        obj.trialStateListener = addlistener(obj.trialStateObj,...
+            'NewTrial',@(src,evnt) trialStateChangeFcn(obj,src,evnt));
+      end
       
 	 function set.experimentSyncObj(obj,bhv)
-		if ~isempty(obj.experimentStateListener)
-		  obj.experimentStateListener.Enabled = false;
-		end
 		obj.experimentSyncObj = bhv;
 		obj.experimentStateListener = addlistener(obj.experimentSyncObj,...
 		  'ExperimentStart',@(src,evnt)experimentStateChangeFcn(obj,src,evnt));
 		addlistener(obj.experimentSyncObj,...
 		  'ExperimentStop',@(src,evnt)experimentStateChangeFcn(obj,src,evnt));
-		obj.experimentStateListener.Enabled = true;
 	 end
       
 	 function set.frameSyncObj(obj,cam)
-		if ~isempty(obj.frameSyncListener)
-		  obj.frameSyncListener.Enabled = false;
-		end
 		obj.frameSyncObj = cam;
-		% Define Listener
 		obj.frameSyncListener = addlistener(obj.frameSyncObj,...
 		  'FrameAcquired',@(src,evnt)frameAcquiredFcn(obj,src,evnt));
-		obj.frameSyncListener.Enabled = false;
 	 end
       
       

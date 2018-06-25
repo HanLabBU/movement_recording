@@ -1,23 +1,6 @@
-classdef DataFile < handle
-   % USAGE:
-   % --------------------------------------------------------------------------------------
-   % Input (obj)
-   % -> any object of the DataFile class or derivative (VideoFile, BehaviorFile)
-   % or any array of DataFile objects
-   % --------------------------------------------------------------------------------------
-   % Examples:
-   % data = obj.getData('arg1','arg2',...)   OR data = getData(obj,'arg1','arg2',...)
-   % data = getData(obj) -> returns all data in all input videofiles
-   % data = getData(obj,'all') -> also returns all data
-   % data = getData(obj, 1:10 )  -> returns first 10 frames of each videofile (trial relative)
-   % data = getData(obj, 'Channel','r')  -> returns all red frames
-   % data = getData(obj,'FrameNumber',5:10:100) -> call using any field in info struct
-   % [data info] = getData(obj, 'Channel','r') -> info structure is also scalar/concatenated
-   % --------------------------------------------------------------------------------------
-   
-   % If Method Called on a DataFile Array -> Call Recursively
-   
-   
+classdef DataFileSmall < handle
+    
+
    
    
    
@@ -109,7 +92,7 @@ classdef DataFile < handle
 		 global CURRENT_EXPERIMENT_NAME
 		 t = now;
 		 if ~exist('datapath','file')
-			obj.default.rootPath = ['F:\Data\FSdata\FS_',datestr(date,'yyyy_mm_dd')];
+			obj.default.rootPath = ['FS_',datestr(date,'yyyy_mm_dd')];
 		 else
 			obj.default.rootPath = datapath();
 		 end
@@ -209,103 +192,72 @@ classdef DataFile < handle
 		 end
 		 obj.filesOpen = true;
 	  end
-	  function addFrame2File(obj,data,info,varargin)
-		 if nargin > 3
-			% Assign Option for 3rd Dimension in Data if Applicable
-			multiChannelOption = varargin{1};
-		 else
-			multiChannelOption = 'unspecified';
-		 end
+	  function addFrame2File(obj,data,info)
 		 try
 			obj.writingToFile = true;
 			if ~obj.isopen && ~obj.isclosed
 			   % Fresh object -> needs to be opened, has NOT been filled and closed
 			   openNewFile(obj)
-			end
-			% If Multiple Frames are attempted, Go Recursive
-			switch ndims(data)
-			   case 4 % Split Frames and Call Recursively (Won't work unless info is same size as data)
-				  fieldname = fields(info);
-				  for n=1:size(data,4)
-					 for m = 1:length(fieldname)
-						subinfo.(fieldname{m}) = info.(fieldname{m})(n);
-					 end
-					 obj.addFrame2File(squeeze(squeeze(data(:,:,1,n))),subinfo)
-				  end
-			   case 3 % Handle Multiple Channels of Data
-				  % Assume 3rd Dimension is Color and Sum Frames
-				  switch lower(multiChannelOption)
-					 case 'sum' % meant for rgb2bw
-						obj.addFrame2File(uint16(sum(data,3)),info)
-					 case 'luminance' % for YCbCr from NTSC source
-						obj.addFrame2File(uint8(data(:,:,1)),info);
-					 otherwise % Split Frames and Call Recursively (Won't work unless info is same size as data)
-						fieldname = fields(info);
-						for n=1:size(data,3)
-						   for m = 1:length(fieldname)
-							  subinfo.(fieldname{m}) = info.(fieldname{m})(n);
-						   end
-						   obj.addFrame2File(squeeze(data(:,:,n)),subinfo)
-						end
-				  end
-			   case {2,1} % Normal Case (Single Frame)
-				  % Update Header
-				  obj.numFrames = obj.numFrames + 1;
-				  % Update DataSize, DataType, etc.
-				  obj.dataSize = size(data);
-				  obj.dataType = class(data);
-				  % Write DATA to Data File
-				  if ~isempty(data)
-					 if ~isempty(fopen(obj.dataFileID))
-						fwrite(obj.dataFileID,data(:),obj.dataType);
-					 else
-						warning('DataFile:checkFrameInfo:DataFileClosed',...
-						   'The Data file has been closed for class: %s',class(obj));
-					 end
-				  end
-				  % Write INFO to Info File
-				  if ~isempty(info)
-					 % Record Frame INFO Format (if first frame)
-					 if isempty(obj.infoFields)
-						obj.infoFields =  fields(info);
-						for n=1:length(obj.infoFields)
-						   prop = obj.infoFields{n};
-						   propclass = class(info.(prop));
-						   obj.infoFormat{n,1} = propclass;
-						   obj.infoFormat{n,2} = size(info.(prop));
-						   obj.infoFormat{n,3} = prop;
-						end
-					 end
-					 % Write All Frame INFO to File
-					 vec2write = zeros(length(obj.infoFields),1);
-					 for n = 1:length(obj.infoFields)
-						infobit = info.(obj.infoFields{n});
-						if isempty(infobit)
-						   infobit = NaN;%TODO fix because this always returns a double
-						end
-						vec2write(n) = double(infobit);
-					 end
-					 try
-						if ~isempty(fopen(obj.infoFileID))
-						   fwrite(obj.infoFileID,vec2write(:),'double');
-						else
-						   warning('DataFile:checkFrameInfo:InfoFileClosed',...
-							  'The Info file has been closed for class: %s',class(obj));
-						   try
-							  addFrame2File(obj.nextFile,data,info);
-							  fprintf('Write to next file successful\n');
-						   catch
-							  fprintf('Write to closed file NOT successful\n');
-						   end
-						end
-					 catch me
-						disp(me.stack(1))
-						warning(me.message);
-					 end
-					 % Extract Data from INFO Structure
-					 obj.checkFrameInfo(info);
-				  end
-			end
+            end
+            if ndim(data) > 2
+                error('Data has too many dimensions!');
+            end
+              % Update Header
+              obj.numFrames = obj.numFrames + 1;
+              % Update DataSize, DataType, etc.
+              obj.dataSize = size(data);
+              obj.dataType = class(data);
+              % Write DATA to Data File
+              if ~isempty(data)
+                 if ~isempty(fopen(obj.dataFileID))
+                    fwrite(obj.dataFileID,data(:),obj.dataType);
+                 else
+                    warning('DataFile:checkFrameInfo:DataFileClosed',...
+                       'The Data file has been closed for class: %s',class(obj));
+                 end
+              end
+              % Write INFO to Info File
+              if ~isempty(info)
+                 % Record Frame INFO Format (if first frame)
+                 if isempty(obj.infoFields)
+                    obj.infoFields =  fields(info);
+                    for n=1:length(obj.infoFields)
+                       prop = obj.infoFields{n};
+                       propclass = class(info.(prop));
+                       obj.infoFormat{n,1} = propclass;
+                       obj.infoFormat{n,2} = size(info.(prop));
+                       obj.infoFormat{n,3} = prop;
+                    end
+                 end
+                 % Write All Frame INFO to File
+                 vec2write = zeros(length(obj.infoFields),1);
+                 for n = 1:length(obj.infoFields)
+                    infobit = info.(obj.infoFields{n});
+                    if isempty(infobit)
+                       infobit = NaN;
+                    end
+                    vec2write(n) = double(infobit);
+                 end
+                 try
+                    if ~isempty(fopen(obj.infoFileID))
+                       fwrite(obj.infoFileID,vec2write(:),'double');
+                    else
+                       warning('DataFile:checkFrameInfo:InfoFileClosed',...
+                          'The Info file has been closed for class: %s',class(obj));
+                       try
+                          addFrame2File(obj.nextFile,data,info);
+                          fprintf('Write to next file successful\n');
+                       catch
+                          fprintf('Write to closed file NOT successful\n');
+                       end
+                    end
+                 catch me
+                    disp(me.stack(1))
+                    warning(me.message);
+                 end
+                 % Extract Data from INFO Structure
+                 obj.checkFrameInfo(info);
+              end
 			obj.writingToFile = false;
 			obj.fileFilled = true;
 		 catch me
@@ -367,18 +319,8 @@ classdef DataFile < handle
 		 nFrames = sum([obj.numFrames]);
 		 frameSize = obj(1).dataSize;
 		 dataType = obj(1).dataType;
-		 if isprop(obj, 'numChannels')
-			nChannels = obj(1).numChannels;
-		 else
-			nChannels = 1;
-		 end
-		 
-		 % PREALLOCATE DATA ARRAY
-		 if nChannels > 1
-			data = zeros([frameSize, nChannels, nFrames], dataType);
-		 else
-			data = zeros([frameSize, nFrames], dataType);
-		 end
+
+ 		data = zeros([frameSize, nFrames], dataType);
 		 % READ INFO STRUCTURE
 		 if nargout>1 % Return Info Structure (concatenated)
 			infoT = obj.getInfo(varargin{:});
@@ -394,29 +336,23 @@ classdef DataFile < handle
 			if isopen(obj(k))
 			   closeFile(obj(k))
 			end
-			[fid,message] = fopen(fullfile(obj(k).rootPath,'FrameSyncFiles',obj(k).dataFileName),'r');
+			[fid,~] = fopen(fullfile(obj(k).rootPath,'FrameSyncFiles',obj(k).dataFileName),'r');
 			if fid < 1
-			   [fid,message] = fopen(fullfile('.','FrameSyncFiles',obj(k).dataFileName),'r');
+			   [fid,~] = fopen(fullfile('.','FrameSyncFiles',obj(k).dataFileName),'r');
 			   if fid < 1
 				  obj.setNewRootPath();
-				  [fid,message] = fopen(fullfile(obj(k).rootPath,'FrameSyncFiles',obj(k).dataFileName),'r');
+				  [fid,~] = fopen(fullfile(obj(k).rootPath,'FrameSyncFiles',obj(k).dataFileName),'r');
 			   end
 			end
 			output = fread(fid,prod([frameSize nFrames]),['*',dataType]);
-			if nChannels > 1
-			   output = reshape(output,frameSize(1),frameSize(2),nChannels,[]);
-			   fclose(fid);
-			   framesRead = size(output,4);
-			   idx = framesAssigned + (1:framesRead);
-			   data(:,:,:,idx) = output;
-			else
-			   output = reshape(output,frameSize(1),frameSize(2),[]);
-			   fclose(fid);
-			   framesRead = size(output,3);
-			   idx = framesAssigned + (1:framesRead);
-			   data(:,:,idx) = output;
-			end
-			framesAssigned = idx(end);
+
+           output = reshape(output,frameSize(1),frameSize(2),[]);
+           fclose(fid);
+           framesRead = size(output,3);
+           idx = framesAssigned + (1:framesRead);
+           data(:,:,idx) = output;
+
+           framesAssigned = idx(end);
 		 end
 		 varargout{1} = data;
 		 if nargout > 1
@@ -546,19 +482,7 @@ classdef DataFile < handle
 		 end
 		 % Restrict Frames to those in a set only
 		 output = frames;
-	  end
-	  function setNewRootPath(obj)
-		 persistent DATAFILE_ROOTPATH
-		 rPath = DATAFILE_ROOTPATH;
-		 if isempty(rPath) || ~isdir(rPath)
-			rPath = uigetdir(pwd,...
-			   'Locate the experiment folder containing the folder: FrameSyncFiles','Set Root-Path');
-			errordlg('Root-Path is wrong: Set a new path to the experiment',...
-			   'Experiment-Path Not Found','modal');
-		 end
-		 DATAFILE_ROOTPATH = rPath;
-		 set(obj,'rootPath',rPath);
-	  end
+      end
    end
    methods % Cleanup and State-Check
 	  function bool = isopen(obj)
@@ -587,14 +511,12 @@ classdef DataFile < handle
 		 bool = obj.writingToFile;
 	  end
 	  function delete(obj)
-		 % 						clear obj.headerMapObj
 		 closeFile(obj)
 	  end
 	  function obj = saveobj(obj)
 		 if ~isclosed(obj)
 			obj.closeFile;
 		 end
-		 % 						fprintf('%s Saved\n',class(obj));
 		 obj.fileSaved = true;
 	  end
    end
@@ -602,102 +524,8 @@ classdef DataFile < handle
 	  function padded_string = pad(str,desired_length)
 		 n_spaces = desired_length-length(str);
 		 padded_string = [str, repmat(' ',[1 n_spaces])];
-	  end
-	  function obj = loadobj(obj)
-		 
-	  end
-	  function datafileObj = recoverDataFile(protoObj)		 
-		 fromProtoObj = {'headerFormat','infoFields', 'infoFormat', 'dataSize', 'dataType', 'numChannels'};
-		 % QUERY LOCATION OF HEADER FILES FROM USER
-		 [tphName, tphDir] = uigetfile('*.fhf','Select a Header File to Recover','MultiSelect','on');
-		 if ischar(tphName)
-			tphName = {tphName};
-		 end
-		 selectedRootPath = tphDir(1:(strfind(tphDir, 'FrameSyncFiles')-1));
-		 firstFrame = 1;
-		 trialNumber = 0;
-		 dataFileClass = class(protoObj);
-		 dataFileConstructor = sprintf('%s(propStruct);',dataFileClass);
-		 % LOOP THROUGH EACH HEADER FILE SPECIFIED TO BUILD EACH DATA-FILE
-		 for kFile = 1:numel(tphName)
-			% FILL PROPERTIES FROM HEADER FILE
-			fname = fullfile(tphDir,tphName{kFile});
-			headerMap = memmapfile(fname,...
-			   'format',protoObj.headerFormat,...
-			   'writable',true);
-			propStruct = headerMap.Data;
-			props = fields(propStruct);						
-			% CONVERT UINT16 BACK TO CHAR
-			for kProp = 1:numel(props)
-			   prop = props{kProp};
-			   if isa(propStruct.(prop), 'uint16')
-				  strProp = char(propStruct.(prop));
-				  strLength = find(~isstrprop(strProp, 'wspace'), 1, 'last');
-				  propStruct.(prop) = strProp(1:strLength);
-			   end
-			end
-			% FILL PROPERTIES FROM PROTOTYPE OBJECT
-			for kProtoProp = 1:numel(fromProtoObj)
-			   prop = fromProtoObj{kProtoProp};
-			   propStruct.(prop) = protoObj.(prop);
-			end
-			% FILL PROPERTIES INFERRED FROM SIZE OF BINARY DATA-FILE
-			protoFrame = zeros(propStruct.dataSize, propStruct.dataType);
-			m = whos('protoFrame'); %# protoFrame
-			bytesPerFrame = m.bytes;
-			[fid, msg] = fopen(fullfile(propStruct.rootPath,'FrameSyncFiles', propStruct.dataFileName), 'rb');
-			if fid < 1
-			   dataFileObj(kFile,1) = [];
-			   warning(msg)
-			   continue
-			end
-			fseek(fid,0, 'eof');
-			nBytes = ftell(fid);
-			fclose(fid);
-			numFramesFromData = nBytes / bytesPerFrame;
-			propStruct.numFrames = numFramesFromData;
-			propStruct.firstFrame = firstFrame;
-			propStruct.lastFrame = firstFrame + propStruct.numFrames - 1;
-			firstFrame = propStruct.lastFrame + 1;
-			% OTHER
-			propStruct.rootPath = selectedRootPath;
-			propStruct.recovery = true;
-			propStruct.filesOpen = false;
-			propStruct.filesClosed = true;
-			if ~logical(propStruct.trialNumber)
-			   propStruct.trialNumber = trialNumber;
-			   trialNumber = trialNumber + 1;
-			end
-			datafileObj(kFile,1) = eval(dataFileConstructor);
-		 end
-		 % USER A STANDARD NAME FOR VARIABLE
-		 partname = lower(class(protoObj));
-		 partname = partname(1:3);
-		 struct4saving.(sprintf('%sfiles',partname)) = datafileObj;		 
-		 saveFileName = fullfile(datafileObj(1).rootPath,sprintf('%s_%s_Set_recovered',datafileObj(1).experimentName, class(datafileObj(1))));
-		 save(saveFileName, '-struct', 'struct4saving', '-v6')
-	  end
+      end
+	 
    end
    
-   
-   
-   
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

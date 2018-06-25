@@ -16,6 +16,10 @@ classdef ImageMoveTrial < SubSystem
   end
   properties (Hidden)
 	 lastFrameAcquiredTime
+     lastTrialStartTime
+     experimentStartTime
+     trialNumber
+     trialLengthSeconds
   end
   
   events
@@ -38,6 +42,8 @@ classdef ImageMoveTrial < SubSystem
 		obj.updateExperimentName()
 	 end
 	 function defineDefaults(obj)
+        obj.default.trialNumber = 1;
+        obj.default.trialLengthSeconds = 30;
 		obj.defineDefaults@SubSystem;
 	 end
 	 function checkProperties(obj)
@@ -84,6 +90,8 @@ classdef ImageMoveTrial < SubSystem
      
 	 function start(obj)
 		obj.updateExperimentName()
+        obj.experimentStartTime = hat;
+        obj.lastTrialStartTime = tic;
 		fprintf('STARTING VRSYSTEM:\n\tSession-Path: %s\n',...
 		  obj.sessionPath);
 		if ~isdir(obj.sessionPath)
@@ -99,13 +107,6 @@ classdef ImageMoveTrial < SubSystem
 		obj.ready = true;
      end
 	 function stop(obj)
-        if ~isempty(obj.clockPulseObj)
-            obj.clockPulseObj.stop();
-        end
-        if ~isempty(obj.trialPulseObj)
-            obj.trialPulseObj.stop();
-        end
-        
 		if obj.experimentRunning
 		  obj.experimentRunning = false;
 		  if ~isempty(obj.currentDataFile) ...
@@ -139,7 +140,13 @@ classdef ImageMoveTrial < SubSystem
               pause(maxFramePeriod - timeSinceLastFrameStart)
            end
 		   
-		   obj.lastFrameAcquiredTime = tic;
+           if (toc(obj.lastTrialStartTime)-obj.lastTrialStartTime) > obj.trialLengthSeconds
+               notify(obj,'NewTrial');
+               obj.trialNumber = obj.trialNumber + 1;
+               obj.lastTrialStartTime = tic;
+           end
+           
+		  obj.lastFrameAcquiredTime = tic;
 		   
 		  obj.framesAcquired = obj.framesAcquired + 1;
 		  if ~isempty(obj.clockPulseObj)
@@ -153,6 +160,8 @@ classdef ImageMoveTrial < SubSystem
 		  end
 
 		  info.Time = evnt.Time;
+          info.trialNumber = obj.trialNumber;
+          info.trialTime = toc(obj.lastTrialStartTime);
 		  data = evnt.RawVelocity;
 		  addFrame2File(obj.currentDataFile,data,info);
 		 
@@ -179,7 +188,6 @@ classdef ImageMoveTrial < SubSystem
       
 	 function set.frameSyncObj(obj,cam)
 		obj.frameSyncObj = cam;
-		% Define Listener
 		obj.frameSyncListener = addlistener(obj.frameSyncObj,...
 		  'FrameAcquired',@(src,evnt)frameAcquiredFcn(obj,src,evnt));
 	 end
