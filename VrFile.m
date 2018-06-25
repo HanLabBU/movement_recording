@@ -44,12 +44,7 @@ classdef VrFile < DataFile
 				function obj = saveobj(obj)
 						obj = saveobj@DataFile(obj);
 				end
-		end
-		methods (Static)
-				function obj = loadobj(obj)
-						obj = obj.loadobj@DataFile;
-				end
-		end
+        end
 		
 		
 		

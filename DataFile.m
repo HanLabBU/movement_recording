@@ -18,10 +18,6 @@ classdef DataFile < handle
             % If Method Called on a DataFile Array -> Call Recursively
     
     
-    
-    
-    
-    
     properties (SetObservable, GetObservable, AbortSet)% Header Data
         rootPath
         experimentName
@@ -89,7 +85,6 @@ classdef DataFile < handle
             obj.defineDefaults;
             obj.checkProperties;
             obj.makeHeader;
-            obj.makeListeners;
         end
     end
     methods (Hidden) % Initialization
@@ -97,7 +92,7 @@ classdef DataFile < handle
             global CURRENT_EXPERIMENT_NAME
             t = now;
 			if ~exist('datapath','file')
-				obj.default.rootPath = ['F:\Data\FSdata\FS_',datestr(date,'yyyy_mm_dd')];
+				obj.default.rootPath = ['FS_',datestr(date,'yyyy_mm_dd')];
 			else
 				obj.default.rootPath = datapath();
 			end
@@ -181,47 +176,6 @@ classdef DataFile < handle
                 obj.headerFormat{n,3} = prop;
             end
             fclose(fid);
-            % 						obj.headerMapObj = memmapfile(fname,...
-            % 								'format',obj.headerFormat,...
-            % 								'writable',true);
-        end
-        function makeListeners(obj)
-            % 						props = properties(obj);
-            % 						for n=1:length(props)
-            % 								prop = props{n};
-            % 								addlistener(obj,prop,'PostSet',@(src,evnt)propertyChangeFcn(obj,src,evnt));
-            % 						end
-        end
-    end
-    methods (Hidden) % Event Response
-        function propertyChangeFcn(obj,src,~) % This Function is no long used.
-            % Changes header file on disk (through memmapfile) whenever non-hidden properties are
-            % changed
-            % 						try
-            % 								if ~isempty(obj.headerMapObj)
-            % 										prop = src.Name;
-            % 										val2write = obj.(prop);
-            % 										% Pad Filenames
-            % 										if any(strcmp(prop,obj.paddedProps))
-            % 												val2write = DataFile.pad(val2write,150);
-            % 										end
-            % 										if ischar(val2write)
-            % 												val2write = uint16(val2write);
-            % 										end
-            % 										if ~strcmp(class(obj.headerMapObj.Data.(prop)), class(val2write))
-            % 												fprintf('HEADER CLASS MISMATCH\nProp: %s     headermap-class: %s    val2write-class: %s\n',...
-            % 														prop,class(obj.headerMapObj.Data.(prop)),class(val2write))
-            % 										elseif numel(obj.headerMapObj.Data.(prop)) ~= numel(val2write)
-            % 												fprintf('HEADER NUMEL MISMATCH\nProp: %s     headermap-numel: %i    val2write-numel: %i\n',...
-            % 														prop, numel(obj.headerMapObj.Data.(prop)) , numel(val2write))
-            % 										else
-            % 												obj.headerMapObj.Data.(prop) = val2write;
-            % 										end
-            % 								end
-            % 						catch me
-            % 								disp(me.stack(1))
-            % 								warning(me.message)
-            % 						end
         end
     end
     methods % Functions for Saving
@@ -369,9 +323,6 @@ classdef DataFile < handle
                 tic
                 while toc < .5
                     if obj.iswriting
-                        % 												pause(.01);
-                        % 												fprintf('DataFile attempting to close while
-                        % 												writing: %i\n',toc);
                         fmu = imaqmem('FrameMemoryUsed') ;
                         if fmu > 2e7 % 2GB
                             warning('DataFile:closeFile',...
@@ -423,7 +374,6 @@ classdef DataFile < handle
                     else
                         data = getData(obj(1),varargin{:});
                     end
-                    % 										data = cat(4,getData(obj(1),varargin{:}),getData(obj(2:end),varargin{:}));
                 catch me
                     data = [];
                     warning('DataFile:getData:DataRetrievalError',...
@@ -453,12 +403,7 @@ classdef DataFile < handle
             end
             info = obj.getInfo(varargin{:});
             % Get Frame Numbers from Arguments
-            try
-                frames = obj.getFrames(varargin{:});
-            catch me
-                beep
-                keyboard
-            end
+            frames = obj.getFrames(varargin{:});
             % Read Data from File (if necessary)
             if ~isempty(frames)
                 if isopen(obj)
@@ -490,21 +435,7 @@ classdef DataFile < handle
             end
             varargout{1} = output;
             if nargout > 1
-                fld = fields(info);
-                % Manage missed frames (short info struct)
-                % 								if frames(end) > length(info.(fld{1}))
-                % 										missingframe = find(frames <= length(info.(fld{1})),1,'last');
-                % 										missingframe = num2str(info.FrameNumber(missingframe));
-                % 										frames = frames(1:length(info.(fld{1})));
-                % 										warning('DataFile:getFrames:MissingFrames',...
-                % 												'Missing frames after frame # %s',missingframe);
-                % 								end
                 varargout{2} = info;
-                % 								for n = 1:length(fld)
-                % 										frameinfo.(fld{n}) = info.(fld{n})(frames);
-                % 								end
-                % 								varargout{2} = frameinfo;
-                
             end
         end
         function output = getInfo(obj,varargin)
@@ -594,7 +525,7 @@ classdef DataFile < handle
             m=1;
             % Argument Case 1 - All Frames -> getFrames(obj)  or  getFrames(obj,'all')
             if nargin == 1 || any(strcmpi(varargin{1},'all'))
-                frameset{1} = 1:obj.numFrames;% TODO: change so frames can be extracted from an array of files
+                frameset{1} = 1:obj.numFrames;
             else
                 % Argument Case 2 - Numbered Frames ->  getFrames(obj,1:60)
                 if isnumeric(varargin{1})
@@ -670,14 +601,12 @@ classdef DataFile < handle
             bool = obj.writingToFile;
         end
         function delete(obj)
-            % 						clear obj.headerMapObj
             closeFile(obj)
         end
         function obj = saveobj(obj)
             if ~isclosed(obj)
                 obj.closeFile;
             end
-            % 						fprintf('%s Saved\n',class(obj));
             obj.fileSaved = true;
         end
     end
@@ -686,38 +615,9 @@ classdef DataFile < handle
             n_spaces = desired_length-length(str);
             padded_string = [str, repmat(' ',[1 n_spaces])];
         end
-        function obj = loadobj(obj)
-            
-        end
     end
     
     
     
     
 end
-
-%TODO: add a timer or something to update header? or protect from others?
-
-% info structure passed to addFrame2File should have the following fields:
-% {FrameNumber, Channel,
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

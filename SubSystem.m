@@ -214,13 +214,6 @@ classdef SubSystem < hgsetget
 			 instantiation_command = sprintf('%s(''rootPath'',''%s'')',...
 				datafileclass, obj.currentDataSetPath);
 			 obj.currentDataFile = eval(instantiation_command);
-			 % 			 fulldatafile.nextDataFile = obj.currentDataFile; obj.currentDataFile.previousDataFile =
-			 % 			 fulldatafile;
-			 % Close Previous-Previous Data-File
-			 % 			 if ~isempty(fulldatafile.previousDataFile) && isopen(fulldatafile.previousDataFile)
-			 % 				closeFile(fulldatafile.previousDataFile);
-			 % 			 end fulldatafile.previousDataFile = []; % Added to prevent slowdowns from increasing
-			 % 			 memory
 		  else
 			 fulldatafile = DataFile.empty(0,1);
 		  end
@@ -327,8 +320,6 @@ classdef SubSystem < hgsetget
 		else
 		  try
 			 dataSetPath = [];
-			 %CHANGED 12/24
-			 % 					dataSetPath = fullfile(obj.sessionPath,obj.currentExperimentName);
 		  catch me
 			 warning('FrameSynx:SubSystem:getCurrentDataSetPath',...
 				'Error forming dataSetPath from sessionPath and currentExperimentName')
@@ -354,12 +345,6 @@ classdef SubSystem < hgsetget
 		end
 	 end
   end
-  
-  
-  
-  
-  
-  
   
 end
 
